@@ -11,7 +11,7 @@ import retrofit2.http.GET;
  */
 
 public interface HackerNewsService {
-    static String HACKER_NEWS_API_VERSION = "v0";
+    String HACKER_NEWS_API_VERSION = "v0";
 
     @GET("/" + HACKER_NEWS_API_VERSION + "/topstories.json")
     Call<List<Integer>> listTopStoriesIds();

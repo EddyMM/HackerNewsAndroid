@@ -11,14 +11,12 @@ import android.view.ViewGroup;
 
 import java.util.List;
 
-import emlearn.hackernews.Constants;
 import emlearn.hackernews.HackerNewsService;
 import emlearn.hackernews.R;
+import emlearn.hackernews.RetrofitSingleton;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 
 /**
@@ -49,15 +47,12 @@ public class TopStoriesListFragment extends Fragment {
      * Fetch top stories from HN and display them
      */
     private void loadTopStories() {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(Constants.HACKER_NEWS_API_BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        HackerNewsService hackerNewsService = retrofit.create(HackerNewsService.class);
+        HackerNewsService hackerNewsService = RetrofitSingleton
+                .getInstance()
+                .create(HackerNewsService.class);
 
         Call<List<Integer>> topStoriesIdsCall =  hackerNewsService.listTopStoriesIds();
 
-        // TODO: Create a callback for the call
         topStoriesIdsCall.enqueue(new Callback<List<Integer>>() {
             @Override
             public void onResponse(@NonNull Call<List<Integer>> call,
