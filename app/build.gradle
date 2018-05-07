@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion rootProject.ext.compileSdkVersion
     defaultConfig {
         applicationId "emlearn.hackernews"
-        minSdkVersion 18
-        targetSdkVersion 26
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -18,14 +18,12 @@ android {
     }
 }
 
-def supportSdkVersion = '26.1.0'
-
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:appcompat-v7:' + supportSdkVersion
+    implementation "com.android.support:appcompat-v7:${rootProject.ext.supportSdkVersion}"
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
-    implementation 'com.android.support:support-v4:' + supportSdkVersion
-    implementation 'com.android.support:recyclerview-v7:' + supportSdkVersion
+
+    implementation "com.android.support:recyclerview-v7:${rootProject.ext.supportSdkVersion}"
     implementation 'com.squareup.retrofit2:retrofit:2.4.0'
     implementation 'com.google.code.gson:gson:2.8.3'
     implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
@@ -33,7 +31,7 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxjava:2.1.13'
 
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support:support-annotations:' + supportSdkVersion
+    androidTestImplementation "com.android.support:support-annotations:${rootProject.ext.supportSdkVersion}"
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 }
