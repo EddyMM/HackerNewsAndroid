@@ -6,4 +6,51 @@ package emlearn.hackernews.model;
  */
 
 public class Story {
+    private String by, title, text, time;
+    private int score;
+
+    public String getBy() {
+        return by;
+    }
+
+    public void setBy(String by) {
+        this.by = by;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getTitle() {
+        return this.title;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Story[by=%s, title=%s]", this.by, this.title);
+    }
 }

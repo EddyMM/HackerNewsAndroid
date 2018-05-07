@@ -3,4 +3,5 @@
 
     <string name="topNewsTitle">TOP NEWS</string>
     <string name="topNewsActivityLabel">Top News</string>
+    <string name="author_label">By</string>
 </resources>
