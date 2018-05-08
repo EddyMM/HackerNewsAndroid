@@ -1,6 +1,7 @@
 package emlearn.hackernews.fragments;
 
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,8 +23,6 @@ import emlearn.hackernews.R;
 import emlearn.hackernews.RetrofitSingleton;
 import emlearn.hackernews.model.Story;
 import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 
 /**
@@ -32,9 +32,8 @@ public class TopStoriesListFragment extends Fragment {
     private static final String TAG = TopStoriesListFragment.class.getSimpleName();
     HackerNewsService hns = RetrofitSingleton.getInstance().create(HackerNewsService.class);
 
-    TopNewsAdapter mTopNewsAdapter;
-    List<Story> mStories = new ArrayList<>();
-
+    TopStoriesAdapter mTopStoriesAdapter;
+    TopStoriesAsyncTask topStoriesAsyncTask;
 
     public TopStoriesListFragment() {
         // Required empty public constructor
@@ -47,11 +46,11 @@ public class TopStoriesListFragment extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.top_stories_list_fragment, container, false);
 
-        RecyclerView topNewsRecyclerView = v.findViewById(R.id.topNewsRecyclerView);
-        topNewsRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        RecyclerView topStoriesRecyclerView = v.findViewById(R.id.topStoriesRecyclerView);
+        topStoriesRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        mTopNewsAdapter = new TopNewsAdapter(mStories);
-        topNewsRecyclerView.setAdapter(mTopNewsAdapter);
+        mTopStoriesAdapter = new TopStoriesAdapter();
+        topStoriesRecyclerView.setAdapter(mTopStoriesAdapter);
 
         return v;
     }
@@ -59,51 +58,61 @@ public class TopStoriesListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        loadTopStoriesIds();
+
+        topStoriesAsyncTask = new TopStoriesAsyncTask();
+        topStoriesAsyncTask.execute();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        topStoriesAsyncTask.cancel(true);
     }
 
     /**
      * Adapter to create and bind Views/ViewHolders to the Top Story recycler view
      */
-    private class TopNewsAdapter extends RecyclerView.Adapter<TopNewsViewHolder> {
-
-        private List<Story> topNews;
-
-        TopNewsAdapter(List<Story> topNews) {
-            this.topNews = topNews;
-        }
+    private class TopStoriesAdapter extends RecyclerView.Adapter<TopStoriesViewHolder> {
+        List<Story> topStories = new ArrayList<>();
 
         @NonNull
         @Override
-        public TopNewsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        public TopStoriesViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View topNewsListItemView = LayoutInflater.from(getContext()).inflate(
                     R.layout.top_stories_list_item_view,
                     parent,
                     false);
 
-            return new TopNewsViewHolder(topNewsListItemView);
+            return new TopStoriesViewHolder(topNewsListItemView);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull TopNewsViewHolder holder, int position) {
-            holder.mTitle.setText(topNews.get(position).getTitle());
+        public void onBindViewHolder(@NonNull TopStoriesViewHolder holder, int position) {
+            holder.mTitle.setText(topStories.get(position).getTitle());
             holder.mAuthor.setText(String.format(
                     "%s: %s",
                     getString(R.string.author_label),
-                    topNews.get(position).getBy()));
-            holder.mScore.setText(String.valueOf(topNews.get(position).getScore()));
+                    topStories.get(position).getBy()));
+            holder.mScore.setText(String.valueOf(topStories.get(position).getScore()));
         }
 
         @Override
         public int getItemCount() {
-            return topNews.size();
+            return topStories.size();
+        }
+
+        void setStories(List<Story> topStories) {
+            this.topStories = topStories;
         }
     }
 
-    private class TopNewsViewHolder extends RecyclerView.ViewHolder {
+    /**
+     * ViewHolder for the recyclerview displaying the top stories
+     */
+    private class TopStoriesViewHolder extends RecyclerView.ViewHolder {
         TextView mTitle, mAuthor, mScore;
 
-        TopNewsViewHolder(View itemView) {
+        TopStoriesViewHolder(View itemView) {
             super(itemView);
 
             mTitle = itemView.findViewById(R.id.tv_top_news_list_item_title);
@@ -116,48 +125,60 @@ public class TopStoriesListFragment extends Fragment {
      * Load the top stories IDs using the hacker News API and send them to
      * {@link #loadTopStories(List)} to get the corresponding stories
      */
-    private void loadTopStoriesIds() {
+    private List<Integer> loadTopStoriesIds() {
         Call<List<Integer>> topStoriesIdsCall = hns.listTopStoriesIds();
-        topStoriesIdsCall.enqueue(new Callback<List<Integer>>() {
-            @Override
-            public void onResponse(@NonNull Call<List<Integer>> call,
-                                   @NonNull Response<List<Integer>> response) {
-                List<Integer> storiesIds  = response.body();
-                if(storiesIds != null) {
-                    loadTopStories(storiesIds.subList(0, Constants.storiesLimit));
-                }
-            }
+        try {
+            List<Integer> storiesIds = topStoriesIdsCall.execute().body();
 
-            @Override
-            public void onFailure(@NonNull Call<List<Integer>> call,
-                                  @NonNull Throwable t) {
-
+            if(storiesIds != null) {
+                return storiesIds.subList(0, Constants.storiesLimit);
             }
-        });
+        } catch (IOException e) {
+            Log.e(TAG, "Error retrieving top stories IDs: " + e);
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     /**
      * Loads the top stories from Hacker News
      */
-    private void loadTopStories(List<Integer> storiesIds) {
-        mStories.clear();
+    private List<Story> loadTopStories(List<Integer> storiesIds) {
+        List<Story> topStories = new ArrayList<>();
 
         for(int storyId: storiesIds) {
             Call<Story> storyCall = hns.getStory(storyId);
-            storyCall.enqueue(new Callback<Story>() {
-                @Override
-                public void onResponse(@NonNull Call<Story> call,
-                                       @NonNull Response<Story> response) {
-                    mStories.add(response.body());
-                    mTopNewsAdapter.notifyDataSetChanged();
+            try {
+                Story story = storyCall.execute().body();
+                if(story != null) {
+                    topStories.add(story);
                 }
+            } catch (IOException e) {
+                Log.e(TAG, "Error retrieving stories: " + e);
+                e.printStackTrace();
+            }
+        }
 
-                @Override
-                public void onFailure(@NonNull Call<Story> call,
-                                      @NonNull Throwable t) {
-                    Log.e(TAG, "Error loading top stories: " + t);
-                }
-            });
+        return topStories;
+    }
+
+    /**
+     * Handle fetching of top stories asynchronously
+     */
+    private class TopStoriesAsyncTask extends AsyncTask<Void, Void, List<Story>> {
+
+        @Override
+        protected List<Story> doInBackground(Void... voids) {
+            List<Integer> storiesIds = loadTopStoriesIds();
+            return loadTopStories(storiesIds);
+        }
+
+        @Override
+        protected void onPostExecute(List<Story> topStories) {
+            super.onPostExecute(topStories);
+            mTopStoriesAdapter.setStories(topStories);
+            mTopStoriesAdapter.notifyDataSetChanged();
         }
     }
 }
