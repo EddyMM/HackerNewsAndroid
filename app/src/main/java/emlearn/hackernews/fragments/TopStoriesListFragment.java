@@ -1,9 +1,11 @@
 package emlearn.hackernews.fragments;
 
 
+import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -11,9 +13,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +36,11 @@ import retrofit2.Call;
  */
 public class TopStoriesListFragment extends Fragment {
     private static final String TAG = TopStoriesListFragment.class.getSimpleName();
+
     HackerNewsService hns = RetrofitSingleton.getInstance().create(HackerNewsService.class);
+
+    ProgressBar mLoadTopNewsProgressBar;
+    Button mRefreshTopStoriesListButton;
 
     TopStoriesAdapter mTopStoriesAdapter;
     TopStoriesAsyncTask topStoriesAsyncTask;
@@ -39,18 +49,21 @@ public class TopStoriesListFragment extends Fragment {
         // Required empty public constructor
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.i(TAG, "** onCreate **");
+    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.i(TAG, "** onCreateView **");
+
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.top_stories_list_fragment, container, false);
 
-        RecyclerView topStoriesRecyclerView = v.findViewById(R.id.topStoriesRecyclerView);
-        topStoriesRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-
-        mTopStoriesAdapter = new TopStoriesAdapter();
-        topStoriesRecyclerView.setAdapter(mTopStoriesAdapter);
+        initUI(v);
 
         return v;
     }
@@ -58,15 +71,37 @@ public class TopStoriesListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-
-        topStoriesAsyncTask = new TopStoriesAsyncTask();
-        topStoriesAsyncTask.execute();
+        Log.i(TAG, "** onResume **");
+        if(mTopStoriesAdapter.topStories.size() == 0) {
+            loadTopStories();
+        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         topStoriesAsyncTask.cancel(true);
+    }
+
+    private void initUI(View v) {
+        // Initialize the fragment views
+        RecyclerView topStoriesRecyclerView = v.findViewById(R.id.topStoriesRecyclerView);
+        topStoriesRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mTopStoriesAdapter = new TopStoriesAdapter();
+        topStoriesRecyclerView.setAdapter(mTopStoriesAdapter);
+
+        mLoadTopNewsProgressBar = v.findViewById(R.id.loading_top_stories_bar);
+
+        mRefreshTopStoriesListButton = v.findViewById(R.id.btn_refresh_top_stories_list);
+        mRefreshTopStoriesListButton.setOnClickListener(
+                (btn) -> loadTopStories()
+        );
+    }
+
+    private void loadTopStories() {
+        mLoadTopNewsProgressBar.setVisibility(View.VISIBLE);
+        topStoriesAsyncTask = new TopStoriesAsyncTask();
+        topStoriesAsyncTask.execute();
     }
 
     /**
@@ -123,9 +158,10 @@ public class TopStoriesListFragment extends Fragment {
 
     /**
      * Load the top stories IDs using the hacker News API and send them to
-     * {@link #loadTopStories(List)} to get the corresponding stories
+     * {@link #getTopStories(List)} to get the corresponding stories
      */
-    private List<Integer> loadTopStoriesIds() {
+    @Nullable
+    private List<Integer> getTopStoriesIds() {
         Call<List<Integer>> topStoriesIdsCall = hns.listTopStoriesIds();
         try {
             List<Integer> storiesIds = topStoriesIdsCall.execute().body();
@@ -133,6 +169,14 @@ public class TopStoriesListFragment extends Fragment {
             if(storiesIds != null) {
                 return storiesIds.subList(0, Constants.storiesLimit);
             }
+        } catch (UnknownHostException e) {
+            Log.e(TAG, "Error retrieving top stories IDs: " + e);
+            e.printStackTrace();
+            Toast.makeText(
+                    getActivity(),
+                    "Ensure that you are connected to the internet",
+                    Toast.LENGTH_LONG
+            ).show();
         } catch (IOException e) {
             Log.e(TAG, "Error retrieving top stories IDs: " + e);
             e.printStackTrace();
@@ -144,19 +188,21 @@ public class TopStoriesListFragment extends Fragment {
     /**
      * Loads the top stories from Hacker News
      */
-    private List<Story> loadTopStories(List<Integer> storiesIds) {
+    private List<Story> getTopStories(@Nullable List<Integer> storiesIds) {
         List<Story> topStories = new ArrayList<>();
 
-        for(int storyId: storiesIds) {
-            Call<Story> storyCall = hns.getStory(storyId);
-            try {
-                Story story = storyCall.execute().body();
-                if(story != null) {
-                    topStories.add(story);
+        if(storiesIds != null) {
+            for (int storyId : storiesIds) {
+                Call<Story> storyCall = hns.getStory(storyId);
+                try {
+                    Story story = storyCall.execute().body();
+                    if (story != null) {
+                        topStories.add(story);
+                    }
+                } catch (IOException e) {
+                    Log.e(TAG, "Error retrieving stories: " + e);
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                Log.e(TAG, "Error retrieving stories: " + e);
-                e.printStackTrace();
             }
         }
 
@@ -166,12 +212,13 @@ public class TopStoriesListFragment extends Fragment {
     /**
      * Handle fetching of top stories asynchronously
      */
+    @SuppressLint("StaticFieldLeak")
     private class TopStoriesAsyncTask extends AsyncTask<Void, Void, List<Story>> {
 
         @Override
         protected List<Story> doInBackground(Void... voids) {
-            List<Integer> storiesIds = loadTopStoriesIds();
-            return loadTopStories(storiesIds);
+            List<Integer> storiesIds = getTopStoriesIds();
+            return getTopStories(storiesIds);
         }
 
         @Override
@@ -179,6 +226,7 @@ public class TopStoriesListFragment extends Fragment {
             super.onPostExecute(topStories);
             mTopStoriesAdapter.setStories(topStories);
             mTopStoriesAdapter.notifyDataSetChanged();
+            mLoadTopNewsProgressBar.setVisibility(View.GONE);
         }
     }
 }

@@ -5,6 +5,6 @@
     android:id="@+id/topNewsFrameLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="emlearn.hackernews.activities.TopStoriesActivity">
+    tools:context="emlearn.hackernews.activities.TopStoriesListActivity">
 
 </FrameLayout>

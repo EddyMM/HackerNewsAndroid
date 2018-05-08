@@ -5,10 +5,26 @@
     android:layout_height="match_parent"
     tools:context="emlearn.hackernews.fragments.TopStoriesListFragment">
 
+    <Button
+        android:id="@+id/btn_refresh_top_stories_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="8dp"
+        android:text="@string/btn_refresh_top_stories_list"
+        android:textSize="15sp" />
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/topStoriesRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_refresh_top_stories_list" />
 
-
+    <ProgressBar
+        android:id="@+id/loading_top_stories_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"/>
 </RelativeLayout>
