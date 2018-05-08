@@ -1,5 +1,7 @@
 package emlearn.hackernews.model;
 
+import android.support.annotation.Nullable;
+
 /**
  * @author eddymwenda
  * @since 29/04/2018.
@@ -7,7 +9,11 @@ package emlearn.hackernews.model;
 
 public class Story {
     private String by, title, text, time;
-    private int score;
+    private int id, score;
+
+    public int getId() {
+        return id;
+    }
 
     public String getBy() {
         return by;
@@ -17,20 +23,21 @@ public class Story {
         this.by = by;
     }
 
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
     public String getTime() {
         return time;
     }
 
     public void setTime(String time) {
         this.time = time;
+    }
+
+    @Nullable
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
     }
 
     public int getScore() {

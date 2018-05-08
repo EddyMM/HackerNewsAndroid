@@ -2,6 +2,7 @@ package emlearn.hackernews.fragments;
 
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -21,13 +22,16 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 
 import emlearn.hackernews.Constants;
 import emlearn.hackernews.HackerNewsService;
 import emlearn.hackernews.R;
 import emlearn.hackernews.RetrofitSingleton;
+import emlearn.hackernews.activities.StoryActivity;
 import emlearn.hackernews.model.Story;
+import emlearn.hackernews.model.StoryKeeper;
 import retrofit2.Call;
 
 
@@ -129,6 +133,14 @@ public class TopStoriesListFragment extends Fragment {
                     getString(R.string.author_label),
                     topStories.get(position).getBy()));
             holder.mScore.setText(String.valueOf(topStories.get(position).getScore()));
+
+            holder.itemView.setOnClickListener(
+                    (view) -> {
+                        int storyId = topStories.get(position).getId();
+                        Intent intent = StoryActivity.createIntent(getActivity(), storyId);
+                        startActivity(intent);
+                    }
+            );
         }
 
         @Override
@@ -193,7 +205,7 @@ public class TopStoriesListFragment extends Fragment {
 
         if(storiesIds != null) {
             for (int storyId : storiesIds) {
-                Call<Story> storyCall = hns.getStory(storyId);
+                Call<Story> storyCall = hns.getStoryInfo(storyId);
                 try {
                     Story story = storyCall.execute().body();
                     if (story != null) {
@@ -224,9 +236,23 @@ public class TopStoriesListFragment extends Fragment {
         @Override
         protected void onPostExecute(List<Story> topStories) {
             super.onPostExecute(topStories);
+
             mTopStoriesAdapter.setStories(topStories);
+            StoryKeeper.addStories(getTopStoriesHashTable(topStories));
+
             mTopStoriesAdapter.notifyDataSetChanged();
             mLoadTopNewsProgressBar.setVisibility(View.GONE);
+        }
+
+        private Hashtable<Integer, Story> getTopStoriesHashTable(@Nullable List<Story> topStories) {
+            Hashtable<Integer, Story> topStoriesHashTable = new Hashtable<>();
+
+            if(topStories != null) {
+                for(Story story: topStories) {
+                    topStoriesHashTable.put(story.getId(), story);
+                }
+            }
+            return  topStoriesHashTable;
         }
     }
 }

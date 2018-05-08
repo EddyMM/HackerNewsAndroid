@@ -19,5 +19,5 @@ public interface HackerNewsService {
     Call<List<Integer>> listTopStoriesIds();
 
     @GET("/" + HACKER_NEWS_API_VERSION + "/item/{storyId}.json")
-    Call<Story> getStory(@Path("storyId") int storyId);
+    Call<Story> getStoryInfo(@Path("storyId") int storyId);
 }
