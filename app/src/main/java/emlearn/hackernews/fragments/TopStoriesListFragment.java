@@ -22,7 +22,7 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import emlearn.hackernews.Constants;
@@ -129,8 +129,8 @@ public class TopStoriesListFragment extends Fragment {
         public void onBindViewHolder(@NonNull TopStoriesViewHolder holder, int position) {
             holder.mTitle.setText(topStories.get(position).getTitle());
             holder.mAuthor.setText(String.format(
-                    "%s: %s",
-                    getString(R.string.author_label),
+                    "%s %s",
+                    getString(R.string.story_author_label),
                     topStories.get(position).getBy()));
             holder.mScore.setText(String.valueOf(topStories.get(position).getScore()));
 
@@ -238,14 +238,14 @@ public class TopStoriesListFragment extends Fragment {
             super.onPostExecute(topStories);
 
             mTopStoriesAdapter.setStories(topStories);
-            StoryKeeper.addStories(getTopStoriesHashTable(topStories));
+            StoryKeeper.getInstance().addStories(getTopStoriesHashMap(topStories));
 
             mTopStoriesAdapter.notifyDataSetChanged();
             mLoadTopNewsProgressBar.setVisibility(View.GONE);
         }
 
-        private Hashtable<Integer, Story> getTopStoriesHashTable(@Nullable List<Story> topStories) {
-            Hashtable<Integer, Story> topStoriesHashTable = new Hashtable<>();
+        private LinkedHashMap<Integer, Story> getTopStoriesHashMap(@Nullable List<Story> topStories) {
+            LinkedHashMap<Integer, Story> topStoriesHashTable = new LinkedHashMap<>();
 
             if(topStories != null) {
                 for(Story story: topStories) {

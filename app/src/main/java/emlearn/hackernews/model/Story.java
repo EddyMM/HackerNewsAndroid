@@ -8,8 +8,9 @@ import android.support.annotation.Nullable;
  */
 
 public class Story {
-    private String by, title, text, time;
+    private String by, title, text;
     private int id, score;
+    private long time;
 
     public int getId() {
         return id;
@@ -23,11 +24,11 @@ public class Story {
         this.by = by;
     }
 
-    public String getTime() {
+    public long getTime() {
         return time;
     }
 
-    public void setTime(String time) {
+    public void setTime(int time) {
         this.time = time;
     }
 

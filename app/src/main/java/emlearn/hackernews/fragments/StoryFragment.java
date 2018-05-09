@@ -12,6 +12,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import emlearn.hackernews.R;
 import emlearn.hackernews.model.Story;
 import emlearn.hackernews.model.StoryKeeper;
@@ -54,37 +57,24 @@ public class StoryFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_story, container, false);
 
-        Story story = StoryKeeper.getStory(mStoryId);
+        Story story = StoryKeeper.getInstance().getStory(mStoryId);
 
         TextView tvStoryTitle = v.findViewById(R.id.tv_story_title);
         tvStoryTitle.setText(story.getTitle());
 
         TextView tvStoryAuthor = v.findViewById(R.id.tv_story_author);
-        tvStoryAuthor.setText(
-                String.format(
-                        "%s: %s",
-                        getString(R.string.story_author_label),
-                        story.getBy()
-                )
-        );
+        tvStoryAuthor.setText(story.getBy());
 
         TextView tvStoryDate = v.findViewById(R.id.tv_story_date);
-        tvStoryDate.setText(
-                String.format(
-                        "%s: %s",
-                        getString(R.string.story_time_label),
-                        story.getTime()
-                )
-        );
+        Date date = new Date(story.getTime() * 1000);
+        SimpleDateFormat sf = (SimpleDateFormat) SimpleDateFormat.getDateInstance();
+        sf.applyLocalizedPattern("dd MMM, yyyy");
+        String formatedDate = sf.format(date);
+
+        tvStoryDate.setText(formatedDate);
 
         TextView tvStoryScore = v.findViewById(R.id.tv_story_score);
-        tvStoryScore.setText(
-                String.format(
-                        "%s: %s",
-                        getString(R.string.story_score_label),
-                        String.valueOf(story.getScore())
-                )
-        );
+        tvStoryScore.setText(String.valueOf(story.getScore()));
 
         TextView tvStoryText = v.findViewById(R.id.tv_story_text);
 
@@ -95,8 +85,6 @@ public class StoryFragment extends Fragment {
                 tvStoryText.setText(Html.fromHtml(story.getText()));
             }
         }
-
-
 
         return v;
     }

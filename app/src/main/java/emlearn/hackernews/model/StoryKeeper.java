@@ -1,7 +1,6 @@
 package emlearn.hackernews.model;
 
-import java.util.Hashtable;
-import java.util.List;
+import java.util.LinkedHashMap;
 
 /**
  * @author eddy.
@@ -11,9 +10,9 @@ public class StoryKeeper {
     private static StoryKeeper sStoryKeeper;
 
     private StoryKeeper() {}
-    private static Hashtable<Integer, Story> mStories;
+    private static LinkedHashMap<Integer, Story> mStories = new LinkedHashMap<>();
 
-    public StoryKeeper getInstance() {
+    public static StoryKeeper getInstance() {
         if(sStoryKeeper == null) {
             sStoryKeeper = new StoryKeeper();
         }
@@ -21,15 +20,15 @@ public class StoryKeeper {
         return sStoryKeeper;
     }
 
-    public static void addStories(Hashtable<Integer, Story> stories) {
+    public void addStories(LinkedHashMap<Integer, Story> stories) {
         mStories = stories;
     }
 
-    public static Hashtable<Integer, Story> getStories() {
+    public LinkedHashMap<Integer, Story> getStories() {
         return mStories;
     }
 
-    public static Story getStory(int storyId) {
+    public Story getStory(int storyId) {
         return mStories.get(storyId);
     }
 }
