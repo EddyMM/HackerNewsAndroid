@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">Hacker News</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="topNewsTitle">TOP NEWS</string>
+    <string name="topNewsActivityLabel">Top News</string>
+    <string name="story_author_label">By:</string>
+    <string name="btn_refresh_top_stories_list">REFRESH</string>
+    <string name="story_score_label">Score:</string>
+    <string name="story_time_label">When:</string>
 </resources>

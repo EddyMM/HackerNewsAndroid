@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/tv_top_news_list_item_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@id/tv_top_news_list_item_score"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        tools:text="Title"/>
+
+    <TextView
+        android:id="@+id/tv_top_news_list_item_author"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tv_top_news_list_item_title"
+        android:layout_toStartOf="@id/tv_top_news_list_item_score"
+        android:textSize="14sp"
+        tools:text="Author"/>
+
+    <TextView
+        android:id="@+id/tv_top_news_list_item_score"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:textSize="14sp"
+        tools:text="Score"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/tv_top_news_list_item_author"
+        android:background="@android:color/darker_gray" />
+
+</RelativeLayout>
