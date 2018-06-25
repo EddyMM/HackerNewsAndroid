@@ -49,6 +49,8 @@ public class TopStoriesListFragment extends Fragment {
     TopStoriesAdapter mTopStoriesAdapter;
     TopStoriesAsyncTask topStoriesAsyncTask;
 
+    RecyclerView mTopStoriesRecyclerView;
+
     public TopStoriesListFragment() {
         // Required empty public constructor
     }
@@ -89,12 +91,14 @@ public class TopStoriesListFragment extends Fragment {
 
     private void initUI(View v) {
         // Initialize the fragment views
-        RecyclerView topStoriesRecyclerView = v.findViewById(R.id.topStoriesRecyclerView);
-        topStoriesRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mTopStoriesRecyclerView = v.findViewById(R.id.topStoriesRecyclerView);
+        mTopStoriesRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mTopStoriesAdapter = new TopStoriesAdapter();
-        topStoriesRecyclerView.setAdapter(mTopStoriesAdapter);
+        mTopStoriesRecyclerView.setAdapter(mTopStoriesAdapter);
 
         mLoadTopNewsProgressBar = v.findViewById(R.id.loading_top_stories_bar);
+
+
 
         mRefreshTopStoriesListButton = v.findViewById(R.id.btn_refresh_top_stories_list);
         mRefreshTopStoriesListButton.setOnClickListener(
@@ -104,6 +108,7 @@ public class TopStoriesListFragment extends Fragment {
 
     private void loadTopStories() {
         mLoadTopNewsProgressBar.setVisibility(View.VISIBLE);
+        mTopStoriesRecyclerView.setVisibility(View.INVISIBLE);
         topStoriesAsyncTask = new TopStoriesAsyncTask();
         topStoriesAsyncTask.execute();
     }
@@ -242,6 +247,7 @@ public class TopStoriesListFragment extends Fragment {
 
             mTopStoriesAdapter.notifyDataSetChanged();
             mLoadTopNewsProgressBar.setVisibility(View.GONE);
+            mTopStoriesRecyclerView.setVisibility(View.VISIBLE);
         }
 
         private LinkedHashMap<Integer, Story> getTopStoriesHashMap(@Nullable List<Story> topStories) {
